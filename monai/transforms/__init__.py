@@ -88,6 +88,7 @@ from .intensity.dictionary import (
     AdjustContrastd,
     AdjustContrastD,
     AdjustContrastDict,
+    GaussianNoised,
     GaussianSharpend,
     GaussianSharpenD,
     GaussianSharpenDict,
