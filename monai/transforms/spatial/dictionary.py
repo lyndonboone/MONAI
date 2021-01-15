@@ -804,6 +804,10 @@ class RandRotated(Randomizable, MapTransform):
             If single number, angle is uniformly sampled from (-range_y, range_y).
         range_z: Range of rotation angle in radians in the plane defined by the second and third axes.
             If single number, angle is uniformly sampled from (-range_z, range_z).
+        two_sided_range: If it is True, the sampled rotation angles will be flipped in sign
+            with probability 0.5. For example, if range_x is (0.2, 0.4) and two_sided_range is True,
+            the rotation x will be sampled from uniform(0.2, 0.4) with probability 0.5,
+            or uniform(-0.4, -0.2) with probability 0.5. Default is False
         prob: Probability of rotation.
         keep_size: If it is False, the output shape is adapted so that the
             input array is contained completely in the output.
@@ -831,6 +835,7 @@ class RandRotated(Randomizable, MapTransform):
         range_x: Union[Tuple[float, float], float] = 0.0,
         range_y: Union[Tuple[float, float], float] = 0.0,
         range_z: Union[Tuple[float, float], float] = 0.0,
+        two_sided_range: bool = False,
         prob: float = 0.1,
         keep_size: bool = True,
         mode: GridSampleModeSequence = GridSampleMode.BILINEAR,
@@ -849,6 +854,7 @@ class RandRotated(Randomizable, MapTransform):
         if len(self.range_z) == 1:
             self.range_z = tuple(sorted([-self.range_z[0], self.range_z[0]]))
 
+        self.two_sided_range = two_sided_range
         self.prob = prob
         self.keep_size = keep_size
         self.mode = ensure_tuple_rep(mode, len(self.keys))
@@ -866,6 +872,10 @@ class RandRotated(Randomizable, MapTransform):
         self.x = self.R.uniform(low=self.range_x[0], high=self.range_x[1])
         self.y = self.R.uniform(low=self.range_y[0], high=self.range_y[1])
         self.z = self.R.uniform(low=self.range_z[0], high=self.range_z[1])
+        if self.two_sided_range:
+            for axis in 'xyz':
+                if self.R.random_sample() < 0.5:
+                    setattr(self, axis, -getattr(self, axis))
 
     def __call__(self, data: Mapping[Hashable, np.ndarray]) -> Dict[Hashable, np.ndarray]:
         self.randomize()
