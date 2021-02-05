@@ -40,6 +40,7 @@ from monai.utils import dtype_torch_to_numpy, ensure_tuple_size
 __all__ = [
     "GaussianNoised",
     "RandGaussianNoised",
+    "RicianNoised"
     "ShiftIntensityd",
     "RandShiftIntensityd",
     "ScaleIntensityd",
@@ -95,7 +96,6 @@ __all__ = [
 
 class GaussianNoised(Randomizable, MapTransform):
     """
-    Dictionary-based version :py:class:`monai.transforms.RandGaussianNoise`.
     Add Gaussian noise to image. This transform assumes all the expected fields have same shape.
 
     EDIT: Adpated to "non-randomly" add random Gaussian noise.
@@ -103,7 +103,6 @@ class GaussianNoised(Randomizable, MapTransform):
     Args:
         keys: keys of the corresponding items to be transformed.
             See also: :py:class:`monai.transforms.compose.MapTransform`
-        prob: Probability to add Gaussian noise.
         mean: Mean or “centre” of the distribution.
         std: Standard deviation (spread) of distribution.
     """
@@ -169,6 +168,43 @@ class RandGaussianNoised(Randomizable, MapTransform):
         for key in self.keys:
             dtype = dtype_torch_to_numpy(d[key].dtype) if isinstance(d[key], torch.Tensor) else d[key].dtype
             d[key] = d[key] + self._noise.astype(dtype)
+        return d
+
+
+class RicianNoised(Randomizable, MapTransform):
+    """
+    Add Rician noise to image. This transform assumes all the expected fields have same shape.
+
+    Args:
+        keys: keys of the corresponding items to be transformed.
+            See also: :py:class:`monai.transforms.compose.MapTransform`
+        mean: Mean or “centre” of the normal distributions.
+        std: Standard deviation (spread) of normal distributions.
+    """
+
+    def __init__(
+        self, keys: KeysCollection, mean: Union[Sequence[float], float] = 0.0, std: float = 0.1
+    ) -> None:
+        super().__init__(keys)
+        self.mean = ensure_tuple_size(mean, len(self.keys))
+        self.std = std
+        self._noise1: Optional[np.ndarray] = None
+        self._noise2: Optional[np.ndarray] = None
+
+    def randomize(self, im_shape: Sequence[int]) -> None:
+        self._noise1 = self.R.normal(self.mean, self.std, size=im_shape)
+        self._noise2 = self.R.normal(self.mean, self.std, size=im_shape)
+
+    def __call__(self, data: Mapping[Hashable, np.ndarray]) -> Dict[Hashable, np.ndarray]:
+        d = dict(data)
+
+        image_shape = d[self.keys[0]].shape  # image shape from the first data key
+        self.randomize(image_shape)
+        assert self._noise1 is not None
+        assert self._noise2 is not None
+        for key in self.keys:
+            dtype = dtype_torch_to_numpy(d[key].dtype) if isinstance(d[key], torch.Tensor) else d[key].dtype
+            d[key] = np.sqrt((d[key] + self._noise1.astype(dtype))**2 + self._noise2.astype(dtype)**2)
         return d
 
 

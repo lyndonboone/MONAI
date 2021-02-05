@@ -122,6 +122,7 @@ from .intensity.dictionary import (
     RandShiftIntensityd,
     RandShiftIntensityD,
     RandShiftIntensityDict,
+    RicianNoised,
     ScaleIntensityd,
     ScaleIntensityD,
     ScaleIntensityDict,
