@@ -116,6 +116,7 @@ from .intensity.dictionary import (
     RandHistogramShiftd,
     RandHistogramShiftD,
     RandHistogramShiftDict,
+    RandRicianNoised,
     RandScaleIntensityd,
     RandScaleIntensityD,
     RandScaleIntensityDict,
