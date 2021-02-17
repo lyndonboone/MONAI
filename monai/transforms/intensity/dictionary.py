@@ -234,17 +234,18 @@ class RandRicianNoised(Randomizable, MapTransform):
 
     def randomize(self, im_shape: Sequence[int]) -> None:
         self._do_transform = self.R.random() < self.prob
-        sampled_std = self.R.uniform(0, self.std)
-        self._noise1 = self.R.normal(self.mean, sampled_std, size=im_shape)
-        self._noise2 = self.R.normal(self.mean, sampled_std, size=im_shape)
+        if self._do_transform:
+            sampled_std = self.R.uniform(0, self.std)
+            self._noise1 = self.R.normal(self.mean, sampled_std, size=im_shape)
+            self._noise2 = self.R.normal(self.mean, sampled_std, size=im_shape)
 
     def __call__(self, data: Mapping[Hashable, np.ndarray]) -> Dict[Hashable, np.ndarray]:
         d = dict(data)
 
         image_shape = d[self.keys[0]].shape  # image shape from the first data key
         self.randomize(image_shape)
-        assert self._noise1 is not None
-        assert self._noise2 is not None
+        # assert self._noise1 is not None
+        # assert self._noise2 is not None
         if not self._do_transform:
             return d
         for key in self.keys:
