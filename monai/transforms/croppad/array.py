@@ -34,6 +34,7 @@ __all__ = [
     "DivisiblePad",
     "SpatialCrop",
     "CenterSpatialCrop",
+    "BorderCrop",
     "RandSpatialCrop",
     "RandSpatialCropSamples",
     "CropForeground",
@@ -272,6 +273,29 @@ class CenterSpatialCrop(Transform):
         self.roi_size = fall_back_tuple(self.roi_size, img.shape[1:])
         center = [i // 2 for i in img.shape[1:]]
         cropper = SpatialCrop(roi_center=center, roi_size=self.roi_size)
+        return cropper(img)
+
+
+class BorderCrop(Transform):
+    """
+    Simple transform to crop the specified size from each side of every dimension.
+    Inverse of the BorderPad transform (currently with less flexibility).
+
+    Args:
+        spatial_crop: Number of pixels to crop from each side of every dimension.
+    """
+    def __init__(self, spatial_crop: int) -> None:
+        self.spatial_crop = spatial_crop
+
+    def __call__(self, img: np.ndarray) -> np.ndarray:
+        """
+        Apply the transform to `img`, assuming `img` is channel-first.
+        """
+        spatial_crop = self.spatial_crop
+        sd = len(img.shape[1:])
+        roi_start = (spatial_crop,)*sd
+        roi_end = tuple(np.array(img.shape[1:]) - spatial_crop)
+        cropper = SpatialCrop(roi_start=roi_start, roi_end=roi_end)
         return cropper(img)
 
 

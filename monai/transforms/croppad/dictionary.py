@@ -46,6 +46,7 @@ __all__ = [
     "DivisiblePadd",
     "SpatialCropd",
     "CenterSpatialCropd",
+    "BorderCropd",
     "RandSpatialCropd",
     "RandSpatialCropSamplesd",
     "CropForegroundd",
@@ -250,6 +251,27 @@ class CenterSpatialCropd(MapTransform):
     def __init__(self, keys: KeysCollection, roi_size: Union[Sequence[int], int]) -> None:
         super().__init__(keys)
         self.cropper = CenterSpatialCrop(roi_size)
+
+    def __call__(self, data: Mapping[Hashable, np.ndarray]) -> Dict[Hashable, np.ndarray]:
+        d = dict(data)
+        for key in self.keys:
+            d[key] = self.cropper(d[key])
+        return d
+
+
+class BorderCropd(MapTransform):
+    """
+    Dictionary-based wrapper of :py:class:`monai.transforms.BorderCrop`.
+
+    Args:
+        keys: keys of the corresponding items to be transformed.
+            See also: monai.transforms.MapTransform
+        spatial_crop: Number of pixels to crop from each side of every dimension.
+    """
+
+    def __init__(self, keys: KeysCollection, spatial_crop: int) -> None:
+        super().__init__(keys)
+        self.cropper = BorderCrop(spatial_crop)
 
     def __call__(self, data: Mapping[Hashable, np.ndarray]) -> Dict[Hashable, np.ndarray]:
         d = dict(data)

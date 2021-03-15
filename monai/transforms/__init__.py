@@ -12,6 +12,7 @@
 from .adaptors import FunctionSignature, adaptor, apply_alias, to_kwargs
 from .compose import Compose, MapTransform, Randomizable, Transform
 from .croppad.array import (
+    BorderCrop,
     BorderPad,
     BoundingRect,
     CenterSpatialCrop,
@@ -26,6 +27,7 @@ from .croppad.array import (
     SpatialPad,
 )
 from .croppad.dictionary import (
+    BorderCropd,
     BorderPadd,
     BorderPadD,
     BorderPadDict,
