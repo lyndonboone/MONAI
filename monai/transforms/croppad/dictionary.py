@@ -23,6 +23,7 @@ from monai.config import IndexSelection, KeysCollection
 from monai.data.utils import get_random_patch, get_valid_patch_size
 from monai.transforms.compose import MapTransform, Randomizable
 from monai.transforms.croppad.array import (
+    BorderCrop,
     BorderPad,
     BoundingRect,
     CenterSpatialCrop,
