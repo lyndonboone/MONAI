@@ -30,6 +30,7 @@ from monai.transforms.inverse import InvertibleTransform
 from monai.transforms.spatial.array import (
     Affine,
     AffineGrid,
+    DownResolution,
     Flip,
     Orientation,
     Rand2DElastic,
@@ -63,6 +64,7 @@ __all__ = [
     "Rotate90d",
     "RandRotate90d",
     "Resized",
+    "DownResolutiond",
     "Affined",
     "RandAffined",
     "Rand2DElasticd",
@@ -530,6 +532,48 @@ class Resized(MapTransform, InvertibleTransform):
             # Remove the applied transform
             self.pop_transform(d, key)
 
+        return d
+
+
+class DownResolutiond(MapTransform):
+    """
+    Dictionary-based wrapper of :py:class:`monai.transforms.Resize`.
+
+    Args:
+        keys: keys of the corresponding items to be transformed.
+            See also: :py:class:`monai.transforms.compose.MapTransform`
+        spatial_size: expected shape of spatial dimensions after resize operation.
+            if the components of the `spatial_size` are non-positive values, the transform will use the
+            corresponding components of img size. For example, `spatial_size=(32, -1)` will be adapted
+            to `(32, 64)` if the second spatial dimension size of img is `64`.
+        mode: {``"nearest"``, ``"linear"``, ``"bilinear"``, ``"bicubic"``, ``"trilinear"``, ``"area"``}
+            The interpolation mode. Defaults to ``"area"``.
+            See also: https://pytorch.org/docs/stable/nn.functional.html#interpolate
+            It also can be a sequence of string, each element corresponds to a key in ``keys``.
+        align_corners: This only has an effect when mode is
+            'linear', 'bilinear', 'bicubic' or 'trilinear'. Default: None.
+            See also: https://pytorch.org/docs/stable/nn.functional.html#interpolate
+            It also can be a sequence of bool or None, each element corresponds to a key in ``keys``.
+        allow_missing_keys: don't raise exception if key is missing.
+    """
+
+    def __init__(
+        self,
+        keys: KeysCollection,
+        factor: Union[Sequence[float], float],
+        mode: InterpolateModeSequence = InterpolateMode.AREA,
+        align_corners: Union[Sequence[Optional[bool]], Optional[bool]] = None,
+        allow_missing_keys: bool = False,
+    ) -> None:
+        super().__init__(keys, allow_missing_keys)
+        self.mode = ensure_tuple_rep(mode, len(self.keys))
+        self.align_corners = ensure_tuple_rep(align_corners, len(self.keys))
+        self.down_resolution = DownResolution(factor=factor)
+
+    def __call__(self, data: Mapping[Hashable, np.ndarray]) -> Dict[Hashable, np.ndarray]:
+        d = dict(data)
+        for key, mode, align_corners in self.key_iterator(d, self.mode, self.align_corners):
+            d[key] = self.down_resolution(d[key], mode=mode, align_corners=align_corners)
         return d
 
 

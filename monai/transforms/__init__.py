@@ -197,6 +197,7 @@ from .post.dictionary import (
 from .spatial.array import (
     Affine,
     AffineGrid,
+    DownResolution,
     Flip,
     Orientation,
     Rand2DElastic,
@@ -220,6 +221,7 @@ from .spatial.dictionary import (
     Affined,
     AffineD,
     AffineDict,
+    DownResolutiond,
     Flipd,
     FlipD,
     FlipDict,
