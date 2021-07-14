@@ -172,9 +172,9 @@ class OneOf(Compose):
     list of callables with predfined probabilities for each.
 
     Args:
-        transforms: sequence of callables.
         weights: probabilities corresponding to each callable in transforms.
             Probabilities are normalized to sum to one.
+        **kwargs: keyword arguments to Compose, including transforms
 
     OneOf inherits from Compose and uses args map_items and unpack_items in
     the same way.
@@ -182,12 +182,10 @@ class OneOf(Compose):
 
     def __init__(
         self,
-        transforms: Optional[Union[Sequence[Callable], Callable]] = None,
         weights: Optional[Union[Sequence[float], float]] = None,
-        map_items: bool = True,
-        unpack_items: bool = False,
+        **kwargs
     ) -> None:
-        super().__init__(transforms, map_items, unpack_items)
+        super().__init__(**kwargs)
         if len(self.transforms) == 0:
             weights = []
         elif weights is None or isinstance(weights, float):
