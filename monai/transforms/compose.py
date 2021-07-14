@@ -212,7 +212,7 @@ class OneOf(Compose):
         else:
             index = self.R.multinomial(1, self.weights).argmax()
             _transform = self.transforms[index]
-            input_ = apply_transform(_transform, input_, self.map_items, self.unpack_items)
+            input_ = apply_transform(_transform, input_, self.map_items)
             return input_
 
     def inverse(self, data):
